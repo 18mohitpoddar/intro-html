@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="About multus,multus example,parthyadav3105, Ramanujan College, University of Delhi">
+	<meta name="keywords" content="HTML, CSS">
+	<meta name="author" content="Mohit Poddar,Parth Yadav">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Multus</title>
+	<link href="https://fonts.googleapis.com/css?family=Vast+Shadow&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+	<style type="text/css">
+		html {
+  scroll-behavior: smooth;
+}
+
+	.header {
+	color: white;
+	font-size: 30px;
+	font-family: 'Vast Shadow', cursive;
+	background-color: #668cff;
+  	text-align: right;
+  	padding: 30px;
+  	margin: 0px;
+
+  	border: 1px solid #555;}
+			
+	a{
+	text-decoration: none;}
+.navbar {
+  list-style-type: none;
+  line-height:0px;
+  font-family: 'Vast Shadow', cursive;
+  padding-top:0px;
+  padding-bottom: 0px;
+  overflow: hidden;
+  width: 100%;
+  background-color: #333;
+  border: 1px solid #555;
+  display: block;
+
+  top: 0;
+  position: absolute;
+	bottom: 0;
+	position: -webkit-sticky;
+ 	position: sticky; 
+  
+
+}
+
+ .navbar li {
+  float: left;
+  color: blue;
+  border bottom: 1px solid #555;
+}
+
+.navbar  a {
+  display: block;
+
+  color: #bfbfbf;
+  text-align: center;
+  padding: 14px 12px;
+  text-decoration: none;
+}
+
+.navbar  a:hover {
+  background-color: #333;
+}
+.mainc{
+	margin-left:50px;
+	margin-right: 50px;
+	font-family: 'Nunito', sans-serif;
+	font-size: 20px;
+}
+.h1{color: #668cff;}
+.h0{color: #333; font-size: 50px;}
+.snippet{
+	background-color: #202d42;
+	color: #ffffff;
+	display: inline-block;
+	padding: 3px;
+	padding-right: 10px;
+	padding-left: 15px;
+	margin-top: 10px;
+	margin-bottom: 17px;
+	font-size: 0.9em;
+	font-family: 'Roboto Mono', monospace;
+}
+.highlighted{
+	font-weight: bold;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+.lineb{
+	margin-left: 150px;
+	margin-right: 150px;
+	margin-top: 27px;
+	color: #111;
+	border: 1px solid;
+}
+.end{
+/* background-color: #111;*/ 
+text-align: right;
+	background-position:center;
+	background-repeat: no-repeat;
+	background-attachment:fixed;
+	background-size:cover;
+height: 150px;
+width: 100%;
+color: white;
+font-size: 30px;
+
+}
+	</style>
+
+
+</head>
+<body style="margin: 0px;">
+<div id="head"class="header" style="background-image:url('bg3.png')">Multus</div>
+<div class="navbar" >
+	<ul style="list-style-type: none;">
+		<li><a href="#head">HOME</a></li>
+		<li><a href="#install">HOW TO INSTALL</a></li>
+		<li><a href="#use">HOW TO USE</a></li>
+		<li><a href="#find">CONTACT</a></li>
+	</ul>
+</div>
+<div id="example" class="mainc">
+	<h1 class="h0">Multus Example:</h1>
+		
+		<p>In this blog, I am going to create a pod with two interfaces one having <a href="https://github.com/coreos/flannel">flannel network</a> and the other having <a href="https://github.com/cloudnativelabs/kube-router">kube-router network</a>.
+		</p>
+		<p>Before we begin, note: you can find all the files used in this blog <a href="https://github.com/parthyadav3105/getting-started-with-multus">here</a>.</p>
+		<h2 class="h1">Concept:</h2>
+		When using Multus, we have to do two things to add extra interfaces to our pods:
+		<ul>
+			<li>First create a <span class="highlighted">Network-Attachment-Definition</span> for our extra interfaces having <span class="highlighted">config field</span> for it's CNI config (Note: Network-Attachment-Definition is a Custom Resource Definition(CRD) that Multus uses)</li>
+			<li>Then add an <span class="highlighted">annotations</span> to our pod definition yaml of kind: <span class="highlighted">k8s.v1.cni.cncf.io/networks:</span> and give name(same as in Network-Attachment-Definition CRD) of the interfaces that we want to attach to it.</li>
+		</ul>
+		<h2 class="h1">How it works?</h2>
+		When we tell kubectl to create our pod then kubelet creates network namespace for that pod and then required information is passed to Multus CNI plugin for adding network interface and setting up the network.<br>
+		Multus checks for <span class="highlighted">annotations:  k8s.v1.cni.cncf.io/networks:</span> for the names of interfaces to create if any. If so, then Multus searches for Network-Attachment-Definition for those interfaces and then add those interfaces to the pod.
+
+		<h2 class="h1">Prerequisite:</h2>
+		I am assuming that you have created your Kubernetes cluster and have configured a default network. In our case, we are going to use flannel as our default network. You can create that with the following command after creating your cluster:<br>
+		<div class="snippet"><b>$</b> kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/62e44c867a2846fefb68bd5f178daf4da3095ccb/Documentation/kube-flannel.yml</div> 
+		
+		<br>
+		<h3 class="h1">Verification:</h3>
+		Run <div class="snippet"><b>$</b> kubectl get pods -A | grep -i flannel</div> and you should see a flannel pod Running like this:
+		<img src="1.png"><br>
+
+		Note:
+		<ul>
+			<li>10-flannel.conflist is created in /etc/cni/net.d</li>
+			<li>flannel binary is present in /opt/cni/bin</li>
+		</ul>
+		Now, we are good to go with Multus.
+
+		<hr class="lineb" id="install">
+		<h2 class="h0" >Installing Multus</h2>
+		<p>
+			We can install and setup multus either manually or by using multus-deamonset.yml provided by Multus team. If you are doing it for the first time then it is recommended to use multus-daemonset.yml for keeping things simple. I am going to do it by daemonset method.<br>
+			(If you want to know what daemonset is doing then read this <a href="https://github.com/intel/multus-cni/blob/master/doc/how-to-use.md">Multus/how-to-use-guide</a>)
+		</p>
+		<p>
+			For installing Multus by daemonset type the following command:<br>
+			<div class="snippet"><b>$</b> kubectl create -f https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset.yml</div><br>
+		</p>
+		<h3 class="h1">Verification:</h3>
+		Run <div class="snippet"><b>$</b> kubectl get pods -A | grep -i multus</div> and you should see a multus pod running like this:
+		<img src="2.png"><br>
+		Note:
+		<ul>
+			<li>00-multus.conf is created in /etc/cni/net.d</li>
+			<li>Multus binary is installed in /opt/cni/bin</li>
+		</ul>
+
+		<h3 class="h1">What the Multus daemonset file does</h3>
+		<ul>
+		    <li>Starts a Multus daemonset, this runs a pod on each node which places a Multus binary on each node in /opt/cni/bin</li>
+		    <li>Reads the lexigraphically (alphabetically) first configuration file in /etc/cni/net.d, and creates a new configuration file for Multus as /etc/cni/net.d/00-multus.conf, this configuration is auto-generated and is based on the default network configuration (which is assumed to be the alphabetically first configuration)</li>
+		    <li>Creates a /etc/cni/net.d/multus.d directory on each node with authentication information for Multus to access the Kubernetes API.</li>
+		</ul>
+		Note: we can we can override 00-multus.conf by creating our own 00-multus.conf in /etc/cni/net.d/ before running Multus Daemonset file.
+		<br>
+		In our case multus config is automatically generated by Daemonset using 00-flannel.conflist as it was alphabetically first file in /etc/cni/net.d.
+
+		
+
+
+
+
+
+
+
+
+
+		<hr class="lineb">
+
+		<h2 class="h0">Exploring 00-multus.conf</h2>
+		file: <span class="highlighted">/etc/cni/net.d/00-multus.conf</span>
+		<br><img src="3.png"><br>
+
+		There are two methods to define 00-multus.conf file:
+		<ul>
+			<li><span class="highlighted">Delegate method</span> (like the above file)</li>
+			<li><span class="highlighted">"clusterNetwork"+"defaultNetwork" method</span> (In which we don't use delegates field).</li>
+		</ul>
+
+		You can read more about "clusterNetwork"+"defaultNetwork" method in <a href="https://github.com/intel/multus-cni/blob/master/doc/configuration.md">Multus/ Configuration Reference</a>. We are going to discuss the Delegate Method and other fields of 00-multus.conf:
+
+		<ul>
+			<li><span class="highlighted">name:</span> the name of the network</li>
+			<li><span class="highlighted">type:</span> "multus": binary file of multus</li>
+			<li><span class="highlighted">kubeconfig:</span> kubeconfig file for the out of cluster communication with kube-apiserver. See the example <a href="https://github.com/intel/multus-cni/blob/master/doc/node-kubeconfig.yaml">kubeconfig</a>. If you would like to use CRD (i.e. network attachment definition), this is required</li>
+			<li><span class="highlighted">delegates:</span> number of delegate details in the Multus. This is a list of CNI config of the different networks we want to use.</li>
+		</ul>
+
+		<p>
+			Multus uses delegates for clusterNetwork and defaultNetwork. That is, this list of CNI config will always be used for any pod you create.
+		</p>
+		<p>
+			Here, we have specified only one delegate named "cbr0". So, any pod that we create will have an interface for this network by default. Since cbr0 is first in our delegate list, it will be used for creating "clusterNetwork" of Kubernetes i.e. <span class="highlighted">eth0</span> interface on all pod will use flannel. And if we would have specified more interface in delegates then they would have been used for "defaultNetwork" by Multus. That is interfaces for those would always be created in every pod we make.
+		</p>
+
+		<p>
+		Ok, that means our pod can have multiple interfaces now using delegate method. But all pods will have the same number of interfaces. What if we want to create one pod with 3 interfaces and the other with 4 interfaces?<br>
+		We will use our Network-Attachment-Definition for that. The interface that we specified in delegates field of 00-multus.conf will remain same for all pods. If we want to add additional interfaces to our pods then we have to specify that in <span class="highlighted">annotations:  k8s.v1.cni.cncf.io/networks:</span> with names of <span class="highlighted">Network-Attachment-Definitions</span> we create, delimited by comma(<span class="highlighted">,</span>). We will get to know more about Network-Attachment-Definitions usage in a while but before that few points about Multus:
+
+		<ul>
+			<li>The default interface will always have name <span class="highlighted">eth0</span> because our Kubernetes uses it.</li>
+			<li>Any additional interface that we have in multus are named as <span class="highlighted">net1</span>, <span class="highlighted">net2</span>... until and unless we specify the name in annotation field. </li>
+			<li>The first delegate will be used for the cluster network. </li>
+		</ul>
+
+		</p>
+
+
+		
+		<hr class="lineb" id="use">
+
+
+		<h2 class="h0">Using Multus:</h2>
+		Let us create our second interface with kube-router network. As described before we have to create CRD of kind: Network-Attachment-Definition for defining our interfaces. The following is the definition of our required Network-Attachment-Definition for kube-router: 
+		<br>
+		<br>
+		file: <span class="highlighted">mynet.yml</span>
+		<br><img src="4.png"><br>
+		
+		Three things to note:
+
+		<ul>
+			<li>The kind for our CRD is <span class="highlighted">NetworkAttachmentDefinition</span></li>
+			<li>Under metadata we have field <span class="highlighted">name</span> this is the name that we want to give to our configuration.</li>
+			<li>The <span class="highlighted">config</span> field under <span class="highlighted">spec</span>. It has normal CNI configuration that will be used for Network of our custom interface</li>
+		</ul>
+
+		Now, let us create this Network-Attachment-Definition by command:<br>
+		<div class="snippet"><b>$</b> kubectl create -f mynet.yml</div>
+
+		<h3 class="h1">Verification:</h3> 
+		Use command <div class="snippet"><b>$</b> kubectl get network-attachment-definitions</div> and you should see similar output:
+		<br><img src="5.png"><br>
+
+		Now, we have successfully created our Network-Attachment-Definition.<br>
+		If you want to see description of mynet Network-Attachment-Definition then use the command:<br>
+		<div class="snippet"><b>$</b> kubectl describe network-attachment-definition mynet</div>
+
+		<h3 class="h1">Last but not least: Creating the pod</h3>
+		file: <span class="highlighted">pod.yml</span>
+		<br><img src="6.png"><br>
+
+		This is our simple pod definition with one new field under annotations <span class="highlighted">k8s.v1.cni.cncf.io/networks: mynet</span> telling multus to use Network-Attachment-Definition having name <span class="highlighted">mynet</span>.
+
+		<p>
+			Let us create our pod with the command:<br>
+			<div class="snippet"><b>$</b> kubectl create -f pod.yml</div><br>
+			Once, the pod is created it will have 3 interfaces-
+			<ul>
+				<li><span class="highlighted">lo:</span> loopback interface</li>
+				<li><span class="highlighted">eth0:</span> with flannel network</li>
+				<li><span class="highlighted">net1:</span> with kube-router network</li>
+			</ul>
+		</p>
+
+		<h3 class="h1">Verification: Checking for multiple interfaces</h3>
+		Use command:<br>
+		<div class="snippet"><b>$</b> kubectl exec -it nginx ip a</div><br>
+		And you will see three interfaces as below:
+		<img src="img/7.png">
+		Cheers:)<br>
+		<br>
+		<br>
+		If you are still stuck then you can ask for help in <a href="https://intel-corp.herokuapp.com/">intel slack</a> or open an issue in <a href="https://github.com/intel/multus-cni/issues/">intel/multus-cni/issues</a>
+
+		<hr class="lineb">
+
+		<h2 class="h0">Conclusion</h2>
+		<p>
+			We have created a pod with two interfaces using Multus. This is the simplest example that I have covered but there is more that can be done. I have added a few links in the references section for those. If you want to create multiple interfaces without using delegates method then read this <a href="https://dougbtv.com/nfvpe/2017/12/19/multus-crd/">blog</a> by Dougtv  
+		</p>
+
+
+		<hr class="section-break">
+		<h2 class="h0">References:</h2>
+		<ul>
+			<li><a href="http://dougbtv.com/nfvpe/2017/02/22/multus-cni/">Introduction to Multus</a> by Dougtv</li>
+			<li><a href="https://dougbtv.com/nfvpe/2017/12/19/multus-crd/">Multus with CRD</a> by Dougtv</li>
+			<li><a href="https://github.com/intel/multus-cni/blob/master/doc/quickstart.md">QuickStart guide</a></li>
+			<li><a href="https://github.com/intel/multus-cni/issues/3"> Is there any reference yaml file applying multus-cni for pod network? #3 </a></li>
+			<li><a href="https://github.com/intel/multus-cni/blob/master/doc/how-to-use.md">How to use guide</a></li>
+			<li><a href="https://github.com/intel/multus-cni/blob/master/doc/configuration.md">Writing configuration file</a></li>
+		</ul>
+
+	</div>
+<div id="find" class="end" style="background-image:url('bg3.png')">
+	For more information,mail us at <span style="color: #333">mohitpoddar126@gmail.com</span>
+</div>
+	
+</div>
+
+</body>
+</html>
